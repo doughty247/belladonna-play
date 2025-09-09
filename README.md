@@ -19,6 +19,14 @@
 - DRM building blocks: encrypted entitlements cache, asset packing/decryption, mod signing/verification and allowlists.
 - Observability: Prometheus‑style metrics and a simple capability JSON surface for diagnostics.
 
+## What is the HAL
+The HAL (Host Abstraction Layer) is a thin, cross‑platform interface that standardizes how Belladonna Play interacts with the operating system. In practice, it provides:
+- Consistent contracts for process hardening, sandbox/capability reporting, and runtime monitoring across OSes.
+- A user‑mode, least‑privilege design with predictable behavior and clear observability.
+- A portability layer so SDKs and engine plugins integrate once and run consistently on supported platforms.
+
+The HAL focuses on stable, minimal surfaces. Advanced probes (e.g., eBPF on Linux) are feature‑gated and opt‑in. Implementation specifics are kept internal while we evaluate open‑sourcing the HAL and related tooling.
+
 ## Coming soon
 - First‑party engine plugins for easier integration:
 	- Unreal Engine

@@ -1,6 +1,6 @@
 # Belladonna Play
 
-Belladonna Play is a runtime security and integrity layer for games and interactive applications. Our aim is simple: help studios ship fair‑play experiences and protect creator value without punishing legitimate players or locking teams into heavy, opaque systems.
+ Belladonna Play is a runtime security and integrity layer—both DRM and anti‑cheat—for games and interactive applications. Our aim is simple: help studios ship fair‑play experiences and protect creator value without punishing legitimate players or locking teams into heavy, opaque systems. We also support verified community mods through signing and allowlists so creators can embrace healthy mod ecosystems with confidence.
 
 ## Why Belladonna Play exists
 - Fair play matters. Communities thrive when competition is authentic and creators can trust their builds in the wild.
@@ -24,6 +24,7 @@ Belladonna Play is a runtime security and integrity layer for games and interact
 	- Unreal Engine
 	- Unity
 	- Godot
+- Windows support
 - Lightweight SDKs and example projects.
 - Expanded dashboards and diagnostics for operations teams.
 - Broader platform coverage as the Linux foundation hardens.

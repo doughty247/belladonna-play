@@ -7,6 +7,11 @@
 - Respect for players and their machines. We favor least‑privilege designs, clear behavior, and minimum friction. No kernel drivers required; advanced monitoring (e.g., eBPF) is feature‑gated and opt‑in.
 - Developer‑first. Teams deserve predictable performance, observable signals, and tooling that fits existing pipelines.
 
+## Why the name
+- “Belladonna” is the flowering plant known historically for its potency, and in Italian it also means “beautiful woman.” We embrace that duality—beauty and care on the surface with disciplined strength underneath—and we apply strong protections responsibly with least‑privilege and transparency.
+- “Play” signals our focus on games and fair play, including support for verified community mods.
+- Together, the name captures our philosophy: player‑respecting design paired with robust, responsibly applied safeguards.
+
 ## Current status
 - Private repository during an initial closed‑source phase.
 - Internal version: v0.0.1 foundation (Linux‑only).

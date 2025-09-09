@@ -29,6 +29,16 @@
 - Expanded dashboards and diagnostics for operations teams.
 - Broader platform coverage as the Linux foundation hardens.
 
+## Windows framework
+Belladonna Play’s architecture is cross‑platform by design. The Windows path follows the same contracts and behavior as Linux:
+- Unified HAL contracts: the Windows backend implements the same interfaces for process hardening, capability reporting, and monitoring.
+- User‑mode first: no kernel drivers. We prioritize least‑privilege designs and measurable, observable behavior.
+- Parity of features: DRM and anti‑cheat building blocks (entitlements, asset protection, mod signing/verification and allowlists) are OS‑agnostic and will be wired through the Windows backend.
+- Integration: the upcoming Unreal/Unity/Godot plugins and SDKs will expose a consistent API surface across platforms.
+- Connectivity: no always‑online requirement. Online verification and telemetry are opt‑in and recommended primarily for live‑service titles.
+
+Windows builds will follow once the backend stabilizes and passes performance and compatibility validation.
+
 ## Security and privacy commitments
 - Least privilege by default; explicit, documented escalations when needed.
 - Transparency over obscurity: clear surfaces, predictable behavior, and measurable signals.

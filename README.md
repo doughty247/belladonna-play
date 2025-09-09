@@ -33,7 +33,7 @@
 - Least privilege by default; explicit, documented escalations when needed.
 - Transparency over obscurity: clear surfaces, predictable behavior, and measurable signals.
 - Data minimization: collect only what we must to uphold integrity and safety goals.
-- Offline‑friendly operation where practical.
+- No always‑online requirement. Online verification and telemetry are opt‑in and developer‑configurable; recommended for live‑service titles only.
 
 ## Releases
 - Target: Linux x86_64 (glibc ≥ 2.31; kernel ≥ 5.10 recommended).

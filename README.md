@@ -276,7 +276,7 @@ This SDK interface provides **demo functionality** for development and testing. 
 - **[Integration Guide](docs/integration-guide.md)** - Step-by-step integration walkthrough
 - **[API Reference](docs/api-reference.md)** - Complete API documentation  
 - **[Examples](examples/)** - Working integration examples
-- **[FAQ](docs/faq.md)** - Common questions and troubleshooting
+- **[FAQ](#faq)** - Common questions and troubleshooting
 
 ## Security Model
 

@@ -6,6 +6,8 @@ Open-source SDK interface for integrating Belladonna Play DRM and anti-cheat fun
 
 This repository contains the **open-source SDK interface** for Belladonna Play. It provides the public APIs, integration examples, and documentation that game developers use to integrate with Belladonna Play, but the actual DRM and anti-cheat functionality requires the separate closed-source Belladonna Play runtime library.
 
+**Platform Support:** Currently supports **Linux** with Windows support highly prioritized for future releases. Our Hardware Abstraction Layer (HAL) architecture enables rapid cross-platform deployment.
+
 ## Architecture
 
 ```
@@ -227,6 +229,12 @@ cargo run --example basic_integration
 
 ### Prerequisites
 
+**Supported Platforms:**
+- **Linux** (x86_64) - Full SDK and runtime support
+- **Windows** - SDK development support only (runtime planned)
+- **macOS** - SDK development support only (runtime planned)
+
+**Development Requirements:**
 - Rust 1.70+ with Cargo
 - C/C++ compiler (for C bindings)
 - Godot 4.0+ (for Godot extension)
@@ -254,11 +262,14 @@ cargo build --release --features godot-bindings
 
 ## Runtime Requirements
 
-This SDK interface alone provides **example implementations** and **stub functionality** only. For production DRM and anti-cheat functionality, you need:
+This SDK interface provides **demo functionality** for development and testing. For production DRM and anti-cheat functionality, you need:
 
 1. **Belladonna Play Runtime License** - Commercial license for the closed-source runtime
-2. **Runtime Library** - The `belladonna-play` runtime library for your target platform
-3. **Integration Support** - Professional integration assistance available
+2. **Runtime Library** - The `belladonna-play` runtime library (currently Linux x86_64 only)
+3. **Platform Compatibility** - Linux deployment environment for production use
+4. **Integration Support** - Professional integration assistance available
+
+**Note:** Windows runtime support is highly prioritized and enabled by our HAL architecture for rapid deployment once available.
 
 ## Documentation
 
@@ -321,6 +332,83 @@ The Belladonna Play runtime library requires a separate commercial license. Cont
 3. **Build and Test** - Integrate the SDK interface in development mode
 4. **Contact for Runtime** - Reach out for commercial runtime licensing
 5. **Deploy with Confidence** - Launch with full DRM and anti-cheat protection
+
+## FAQ
+
+### Platform Support
+
+**Q: What platforms are currently supported?**
+A: Belladonna Play currently supports **Linux** (x86_64). The SDK interface compiles and runs on Linux systems, and the commercial runtime library is available for Linux production deployments.
+
+**Q: When will Windows support be available?**
+A: Windows support is **highly prioritized** and planned for the next major release. Our Hardware Abstraction Layer (HAL) architecture is specifically designed to enable rapid cross-platform deployment, making Windows implementation straightforward once development resources are allocated.
+
+**Q: Will macOS be supported?**
+A: macOS support is planned for future releases following Windows implementation. The HAL architecture will facilitate this deployment as well.
+
+**Q: Can I develop on Windows and deploy on Linux?**
+A: Yes! The SDK interface can be used for development and testing on any platform where Rust runs. You can develop your integration on Windows using demo mode, then deploy to Linux for production with the runtime library.
+
+### Demo System
+
+**Q: What can I do with the demo system without a commercial license?**
+A: The demo system provides comprehensive functionality including:
+- Realistic entitlement simulation with pre-configured test users
+- Interactive threat detection demonstrations
+- Asset verification examples
+- User management and testing capabilities
+- Integration pattern validation across multiple languages
+
+**Q: How realistic is the demo system compared to the production runtime?**
+A: The demo system accurately simulates the behavior patterns, API responses, and integration requirements of the production runtime. While it doesn't provide actual DRM protection, it gives developers a complete understanding of how their integration will work in production.
+
+**Q: Can I ship games with just the demo system?**
+A: No, the demo system is for development and testing only. Production DRM and anti-cheat functionality requires the commercial Belladonna Play runtime library.
+
+### Integration
+
+**Q: What programming languages are supported?**
+A: Belladonna Play provides native integration for:
+- **Rust** - Direct SDK integration
+- **C/C++** - Through our C ABI layer
+- **Godot** - Native GDScript bindings and examples
+- **Other languages** - Any language that can interface with C libraries
+
+**Q: How long does integration typically take?**
+A: Basic integration can be completed in a few hours to a day using our examples and documentation. Complex custom integrations may take several days depending on specific requirements.
+
+**Q: Do you provide integration support?**
+A: Yes! We offer comprehensive integration support including documentation, examples, community forums for the open-source SDK, and professional integration services for commercial runtime deployments.
+
+### Licensing
+
+**Q: How does the licensing model work?**
+A: The SDK interface is open-source (MIT License) and free to use. The production runtime library requires a separate commercial license with pricing based on your specific use case and deployment scale.
+
+**Q: Can I evaluate the system before purchasing a runtime license?**
+A: Absolutely! The demo system is specifically designed for comprehensive evaluation. You can fully validate your integration, test all features, and ensure compatibility before committing to a commercial runtime license.
+
+**Q: Is the source code for the runtime available?**
+A: The runtime library is closed-source to maintain security effectiveness. However, the complete SDK interface, integration patterns, and examples are open-source to ensure transparency in the integration process.
+
+### Technical
+
+**Q: What are the system requirements?**
+A: Minimum requirements:
+- **Development:** Rust 1.70+, C/C++ compiler
+- **Runtime (Linux):** Linux kernel 4.15+, x86_64 architecture
+- **Memory:** 64MB RAM for SDK operations
+- **Storage:** 10MB for SDK interface, additional space for runtime library
+
+**Q: Does Belladonna Play impact game performance?**
+A: The SDK interface has minimal performance impact. The commercial runtime is optimized for production gaming with negligible performance overhead in normal operation.
+
+**Q: How do I get help if I encounter issues?**
+A: Multiple support channels are available:
+- **GitHub Issues** - For SDK interface bugs and feature requests
+- **Documentation** - Comprehensive integration guides and API references
+- **Community Forums** - Developer discussions and community help
+- **Commercial Support** - Professional support for runtime license holders
 
 ---
 

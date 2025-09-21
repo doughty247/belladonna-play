@@ -4,7 +4,7 @@
 use belladonna_sdk::{InitConfig, SdkHandle, EntitlementCode};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("🎮 Belladonna Play SDK Example");
+    println!("Belladonna Play SDK Example");
     println!("=============================");
     
     // Initialize the SDK
@@ -12,14 +12,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let sdk = SdkHandle::init(InitConfig {
         auto_integrity: true,
     })?;
-    println!("   ✅ SDK initialized successfully");
+    println!("   SDK initialized successfully");
     
     // Check integrity status
     println!("2. Checking integrity status...");
     if sdk.is_integrity_enabled() {
-        println!("   ✅ Integrity monitoring active");
+        println!("   Integrity monitoring active");
     } else {
-        println!("   ⚠️  Integrity monitoring disabled");
+        println!("   Integrity monitoring disabled");
     }
     
     // Check player entitlement
@@ -29,16 +29,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     match entitlement.code {
         EntitlementCode::Ok => {
-            println!("   ✅ Player '{}' is entitled to play", player_id);
+            println!("   Player '{}' is entitled to play", player_id);
         }
         EntitlementCode::NotEntitled => {
-            println!("   ❌ Player '{}' is not entitled", player_id);
+            println!("   Player '{}' is not entitled", player_id);
         }
         EntitlementCode::Error => {
-            println!("   ⚠️  Entitlement check failed (requires runtime)");
+            println!("   Entitlement check failed (requires runtime)");
         }
         other => {
-            println!("   ❓ Entitlement status: {:?}", other);
+            println!("   Entitlement status: {:?}", other);
         }
     }
     
@@ -47,14 +47,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     simulate_game_startup(&sdk)?;
     
     println!("5. Game completed successfully");
-    println!("   📊 Final integrity status: {}", 
+    println!("   Final integrity status: {}", 
              if sdk.is_integrity_enabled() { "Active" } else { "Inactive" });
     
     Ok(())
 }
 
 fn simulate_game_startup(sdk: &SdkHandle) -> Result<(), Box<dyn std::error::Error>> {
-    println!("   🚀 Loading game assets...");
+    println!("   Loading game assets...");
     
     // Simulate loading protected assets
     let protected_assets = vec![
@@ -70,10 +70,10 @@ fn simulate_game_startup(sdk: &SdkHandle) -> Result<(), Box<dyn std::error::Erro
         std::thread::sleep(std::time::Duration::from_millis(100));
     }
     
-    println!("   ✅ All assets loaded successfully");
+    println!("   All assets loaded successfully");
     
     // Simulate game running
-    println!("   🎯 Running game loop...");
+    println!("   Running game loop...");
     for frame in 1..=5 {
         std::thread::sleep(std::time::Duration::from_millis(200));
         

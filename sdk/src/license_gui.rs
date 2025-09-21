@@ -32,7 +32,7 @@ pub struct LicenseDialogConfig {
 impl Default for LicenseDialogConfig {
     fn default() -> Self {
         Self {
-            title: "🛡️ Belladonna License Activation".to_string(),
+            title: "Belladonna License Activation".to_string(),
             message: "Enter your license key to unlock the full game experience:".to_string(),
             placeholder: "Enter license key (e.g., BELL-XXXX-XXXX-XXXX)".to_string(),
             allow_trial: true,
@@ -112,7 +112,7 @@ async fn show_trial_dialog() -> Result<bool, LicenseGuiError> {
     let output = Command::new("zenity")
         .args(&[
             "--question",
-            "--title", "🎮 Trial Mode Available", 
+            "--title", "Trial Mode Available", 
             "--text", "No license key entered. Would you like to start a 30-day trial?\n\n• Access to all game features\n• 30-day time limit\n• Can upgrade anytime",
             "--width", "400",
             "--height", "150"

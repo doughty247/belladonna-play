@@ -20,6 +20,16 @@ Belladonna Play provides a two-layer architecture:
 
 This guide covers SDK integration. Runtime deployment requires a separate commercial license.
 
+### Demo System
+
+The SDK includes a fully functional demo system that allows you to:
+- Test integration patterns without requiring a commercial license
+- Validate your implementation before production deployment
+- Explore all SDK features through interactive examples
+- Benchmark performance impact of integration
+
+The demo system provides realistic stub implementations that mirror the production runtime's behavior patterns.
+
 ## Setup
 
 ### Option 1: Rust Integration
@@ -145,9 +155,9 @@ fn handle_belladonna_error(error: SdkError) {
 ```rust
 fn print_sdk_status(sdk: &SdkHandle) {
     if sdk.is_integrity_enabled() {
-        println!("✅ Anti-cheat protection active");
+        println!("Anti-cheat protection active");
     } else {
-        println!("⚠️  Running without anti-cheat protection");
+        println!("Running without anti-cheat protection");
     }
     
     // In production, you would export metrics to your monitoring system

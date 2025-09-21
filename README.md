@@ -380,6 +380,52 @@ A: Basic integration can be completed in a few hours to a day using our examples
 **Q: Do you provide integration support?**
 A: Yes! We offer comprehensive integration support including documentation, examples, community forums for the open-source SDK, and professional integration services for commercial runtime deployments.
 
+**Q: What game engines are supported?**
+A: Current and planned engine support:
+- **Godot** - Native GDScript bindings and examples (available now)
+- **Unity** - Planned next priority with C# integration layer
+- **Unreal Engine** - Planned following Unity support
+- **Custom Engines** - Full support through C/C++ API integration
+
+Engine support priorities may change based on community feedback and demand.
+
+**Q: How do I integrate Belladonna Play into a custom engine?**
+A: Custom engine integration is fully supported and typically involves:
+
+1. **Link the C Library** - Include `libbelladonna_sdk.so` and `belladonna_sdk.h`
+2. **Initialize at Engine Startup** - Call `bd_init_with_demo()` during engine initialization
+3. **Hook Asset Loading** - Integrate `bd_verify_manifest()` into your asset pipeline
+4. **Add Entitlement Checks** - Call `bd_check_entitlement()` at appropriate game entry points
+5. **Enable Integrity Monitoring** - Use `bd_enable_integrity()` for anti-cheat protection
+
+```cpp
+// Example custom engine integration
+#include "belladonna_sdk.h"
+
+class GameEngine {
+    bd_handle* belladonna_handle;
+    
+    bool initialize() {
+        // Initialize Belladonna during engine startup
+        if (bd_init_with_demo(&belladonna_handle, 1, 1) != 0) {
+            return false;
+        }
+        return true;
+    }
+    
+    bool loadGame(const std::string& player_id) {
+        // Check entitlement before starting game
+        bd_entitlement_result result;
+        if (bd_check_entitlement(belladonna_handle, player_id.c_str(), &result) == 0 && result.entitled) {
+            return startGameSession();
+        }
+        return showPurchaseDialog();
+    }
+};
+```
+
+The C ABI provides complete access to all SDK functionality with minimal integration overhead.
+
 ### Licensing
 
 **Q: How does the licensing model work?**

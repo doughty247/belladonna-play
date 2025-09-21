@@ -1,0 +1,34 @@
+[package]
+name = "belladonna-godot-extension"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Godot engine integration for Belladonna Play SDK"
+repository = "https://github.com/doughty247/belladonna-play"
+
+[features]
+default = ["godot-bindings"]
+godot-bindings = ["godot"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# Crypto dependencies for signature verification examples
+serde_json = "1.0"
+ed25519-dalek = { version = "1", features = ["std"] }
+sha2 = "0.10"
+base64 = "0.21"
+hex = "0.4"
+aes-gcm = "0.10"
+tempfile = "3.6"
+lazy_static = "1.4"
+rand = { version = "0.8", features = ["std"] }
+zeroize = "1.7"
+
+# Godot integration (optional for examples)
+godot = { version = "0.3.5", optional = true }
+
+# Note: This extension provides example integration patterns only.
+# Actual DRM and asset protection requires the closed-source 
+# Belladonna Play runtime library.

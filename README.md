@@ -1,102 +1,288 @@
-# Belladonna Play
+# Belladonna Play SDK
 
-Belladonna Play is a runtime security and integrity layer—both DRM and anti-cheat—for games and interactive applications. My aim is simple: help studios ship fair-play experiences and protect creator value without punishing legitimate players or locking teams into heavy, opaque systems. I also support verified community mods through signing and allowlists so creators can embrace healthy mod ecosystems with confidence.
+Open-source SDK interface for integrating Belladonna Play DRM and anti-cheat functionality into games and interactive applications.
+
+## Overview
+
+This repository contains the **open-source SDK interface** for Belladonna Play. It provides the public APIs, integration examples, and documentation that game developers use to integrate with Belladonna Play, but the actual DRM and anti-cheat functionality requires the separate closed-source Belladonna Play runtime library.
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Your Game/Engine                         │
+├─────────────────────────────────────────────────────────────┤
+│              Belladonna Play SDK (Open Source)             │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────┐  │
+│  │   Rust SDK API  │  │   C/C++ API     │  │   Godot     │  │
+│  │                 │  │                 │  │  Extension  │  │
+│  └─────────────────┘  └─────────────────┘  └─────────────┘  │
+├─────────────────────────────────────────────────────────────┤
+│            Belladonna Play Runtime (Closed Source)         │
+│        ┌─────────────┐  ┌─────────────────────────────┐     │
+│        │     DRM     │  │        Anti-Cheat           │     │
+│        │ Components  │  │       Components            │     │
+│        └─────────────┘  └─────────────────────────────┘     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Repository Contents
+
+- **`sdk/`** - Core Rust SDK with C ABI bindings
+- **`godot-extension/`** - Godot engine integration examples  
+- **`examples/`** - Integration examples and sample code
+- **`docs/`** - Detailed documentation and guides
+
+## Quick Start
+
+### Rust Integration
+
+```rust
+use belladonna_sdk::{InitConfig, SdkHandle};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Initialize the SDK
+    let sdk = SdkHandle::init(InitConfig { 
+        auto_integrity: true 
+    })?;
+    
+    // Check user entitlement
+    let result = sdk.check_entitlement("player123");
+    if result.entitled {
+        println!("Player is entitled to play");
+    } else {
+        println!("Player is not entitled: {:?}", result.code);
+    }
+    
+    // Enable integrity monitoring
+    sdk.enable_integrity()?;
+    
+    Ok(())
+}
+```
+
+### C/C++ Integration
+
+```cpp
+#include "belladonna_sdk.h"
+
+int main() {
+    bd_handle* handle;
+    
+    // Initialize SDK with integrity monitoring
+    if (bd_init(&handle, 1) != 0) {
+        return 1;
+    }
+    
+    // Check entitlement
+    bd_entitlement_result result;
+    int status = bd_check_entitlement(handle, "player123", &result);
+    
+    if (status == 0 && result.entitled) {
+        printf("Player is entitled\\n");
+    } else {
+        printf("Player is not entitled\\n");
+    }
+    
+    // Clean shutdown
+    bd_shutdown(handle);
+    return 0;
+}
+```
+
+### Godot Integration
+
+```gdscript
+extends Node
+
+func _ready():
+    var belladonna = BelladonnaRuntime.new()
+    
+    # Check SDK version
+    print("Belladonna SDK Version: ", belladonna.version())
+    
+    # Verify game assets
+    if belladonna.verify_manifest("res://assets/manifest.json"):
+        print("Asset manifest verified successfully")
+    else:
+        print("Asset verification failed: ", belladonna.get_last_error())
+```
+
+## Features
+
+### SDK Interface (Open Source)
+- ✅ **High-level API** - Clean, ergonomic interfaces for common operations
+- ✅ **Cross-language bindings** - C ABI for integration with any language
+- ✅ **Godot integration** - Native GDScript bindings and examples
+- ✅ **Example implementations** - Cryptographic verification examples
+- ✅ **Documentation** - Comprehensive guides and API documentation
+
+### Runtime Features (Requires Commercial License)
+- 🔒 **DRM Protection** - Asset encryption and entitlement verification
+- 🔒 **Anti-Cheat** - Process integrity monitoring and threat detection
+- 🔒 **Asset Streaming** - Secure asset loading with signature verification
+- 🔒 **Mod Verification** - Cryptographic signing for approved modifications
+- 🔒 **Analytics** - Detailed security metrics and observability
+
+## Integration Patterns
+
+### 1. Basic DRM Integration
+
+```rust
+// Initialize with DRM only
+let sdk = SdkHandle::init(InitConfig { auto_integrity: false })?;
+
+// Check if player owns the game
+match sdk.check_entitlement(&player_id) {
+    EntitlementResult { entitled: true, .. } => {
+        // Player owns the game - proceed
+        start_game();
+    }
+    EntitlementResult { code: EntitlementCode::Expired, .. } => {
+        // License expired
+        show_purchase_dialog();
+    }
+    _ => {
+        // Not entitled or other error
+        show_demo_mode();
+    }
+}
+```
+
+### 2. Anti-Cheat Integration  
+
+```rust
+// Enable integrity monitoring
+let sdk = SdkHandle::init(InitConfig { auto_integrity: true })?;
+
+// Check integrity status
+if sdk.is_integrity_enabled() {
+    println!("Anti-cheat protection active");
+} else {
+    println!("Running in offline mode");
+}
+```
+
+### 3. Asset Protection
+
+```c
+// Load protected game asset
+char* asset_data;
+size_t asset_size;
+
+int result = bd_decrypt_asset_to_memory(
+    "assets/level1.enc", 
+    &asset_data, 
+    &asset_size
+);
+
+if (result == BD_OK) {
+    // Use decrypted asset data
+    load_level_data(asset_data, asset_size);
+    
+    // Always free encrypted asset memory
+    bd_free_memory(asset_data);
+}
+```
+
+## Building
+
+### Prerequisites
+
+- Rust 1.70+ with Cargo
+- C/C++ compiler (for C bindings)
+- Godot 4.0+ (for Godot extension)
+
+### Build SDK
+
+```bash
+cd sdk/
+cargo build --release
+```
+
+### Build with C ABI
+
+```bash
+cd sdk/
+cargo build --release --features ffi
+```
+
+### Build Godot Extension
+
+```bash
+cd godot-extension/
+cargo build --release --features godot-bindings
+```
+
+## Runtime Requirements
+
+This SDK interface alone provides **example implementations** and **stub functionality** only. For production DRM and anti-cheat functionality, you need:
+
+1. **Belladonna Play Runtime License** - Commercial license for the closed-source runtime
+2. **Runtime Library** - The `belladonna-play` runtime library for your target platform
+3. **Integration Support** - Professional integration assistance available
+
+## Documentation
+
+- **[Integration Guide](docs/integration-guide.md)** - Step-by-step integration walkthrough
+- **[API Reference](docs/api-reference.md)** - Complete API documentation  
+- **[Examples](examples/)** - Working integration examples
+- **[FAQ](docs/faq.md)** - Common questions and troubleshooting
+
+## Security Model
+
+### Open Source Boundaries
+
+This SDK provides:
+- ✅ Public API interfaces and type definitions
+- ✅ Example cryptographic verification code
+- ✅ Integration patterns and documentation
+- ✅ Stub implementations for development/testing
+
+This SDK does **NOT** provide:
+- ❌ Actual DRM protection mechanisms
+- ❌ Anti-cheat detection algorithms  
+- ❌ Production cryptographic keys
+- ❌ Bypass/circumvention protection
+
+### Security Through Obscurity
+
+The Belladonna Play security model follows industry best practices:
+
+- **Open interfaces** - APIs and integration patterns are transparent
+- **Closed implementation** - Security-critical algorithms remain proprietary
+- **Verified builds** - Runtime binaries are cryptographically signed
+- **Key isolation** - Production keys never appear in open-source code
+
+## Support
+
+### Community Support (Open Source)
+- **GitHub Issues** - Bug reports and feature requests for SDK interface
+- **Documentation** - Comprehensive guides and examples
+- **Community Forums** - Developer discussions and integration help
+
+### Commercial Support (Runtime)
+- **Professional Integration** - Dedicated integration engineering support
+- **Priority Bug Fixes** - Expedited resolution for runtime issues
+- **Custom Development** - Tailored solutions for specific requirements
+- **24/7 Monitoring** - Production security monitoring and response
+
+## Licensing
+
+### SDK License (MIT)
+The SDK interface, examples, and documentation in this repository are licensed under the MIT License.
+
+### Runtime License (Commercial)
+The Belladonna Play runtime library requires a separate commercial license. Contact the maintainers for licensing information.
+
+## Getting Started
+
+1. **Try the Examples** - Start with the integration examples
+2. **Read the Documentation** - Review the integration guide
+3. **Build and Test** - Integrate the SDK interface in development mode
+4. **Contact for Runtime** - Reach out for commercial runtime licensing
+5. **Deploy with Confidence** - Launch with full DRM and anti-cheat protection
 
 ---
 
-## Why Belladonna Play Exists
-
-- **Fair play matters.** Communities thrive when competition is authentic and creators can trust their builds in the wild.  
-- **Respect for players and their machines.** I favor least-privilege designs, clear behavior, and minimum friction. No kernel drivers required; advanced monitoring (e.g., eBPF) is feature-gated and opt-in.  
-- **Developer-first.** Teams deserve predictable performance, observable signals, and tooling that fits existing pipelines.  
-
----
-
-## Why the Name
-
-- **“Belladonna”** is a potent flowering plant, and in Italian it also means “beautiful woman.” I embrace that duality—beauty and care on the surface with disciplined strength underneath.  
-- Like the plant, **if misused it is deadly**: safe and invisible for fair players, but toxic for attackers and cheaters.  
-- **“Play”** highlights the focus on games, fairness, and verified community mods.  
-- Together, the name stands for **trust, strength, and protection applied responsibly.**
-
----
-
-## Current Status
-
-- Private repository during an initial closed-source phase.  
-- Internal version: v0.0.1 foundation (Linux-only).  
-- Binaries-only pre-releases will be published as I stabilize the foundation.  
-- I plan to open-source the HAL layer and selected developer tooling in a dedicated repository; runtime anti-cheat and DRM components will remain closed-source for now.  
-
----
-
-## What’s in the Foundation Today
-
-- **HAL-unified Linux backend:** capability and sandbox reporting (seccomp, namespaces), anti-debug probes via libc routing.  
-- **System monitoring:** perf-based baseline with eBPF loader scaffold (opt-in) and mode reporting.  
-- **DRM building blocks:** encrypted entitlements cache, asset packing/decryption, mod signing/verification and allowlists.  
-- **Observability:** Prometheus-style metrics and a simple capability JSON surface for diagnostics.  
-
----
-
-## What is the HAL
-
-The HAL (Host Abstraction Layer) is a thin, cross-platform interface that standardizes how Belladonna Play interacts with the operating system. In practice, it provides:
-
-- Consistent contracts for process hardening, sandbox/capability reporting, and runtime monitoring across OSes.  
-- A user-mode, least-privilege design with predictable behavior and clear observability.  
-- A portability layer so SDKs and engine plugins integrate once and run consistently on supported platforms.  
-
-The HAL focuses on stable, minimal surfaces. Advanced probes (e.g., eBPF on Linux) are feature-gated and opt-in. Implementation specifics are kept internal while I evaluate open-sourcing the HAL and related tooling.  
-
----
-
-## Coming Soon
-
-- First-party engine plugins for easier integration:  
-  - Unreal Engine  
-  - Unity  
-  - Godot  
-- Windows support  
-- Lightweight SDKs and example projects  
-- Expanded dashboards and diagnostics for operations teams  
-- Broader platform coverage as the Linux foundation hardens  
-
----
-
-## Windows Framework
-
-Belladonna Play’s architecture is cross-platform by design. The Windows path follows the same contracts and behavior as Linux:
-
-- **Unified HAL contracts:** the Windows backend implements the same interfaces for process hardening, capability reporting, and monitoring.  
-- **User-mode first:** no kernel drivers. I prioritize least-privilege designs and measurable, observable behavior.  
-- **Parity of features:** DRM and anti-cheat building blocks (entitlements, asset protection, mod signing/verification and allowlists) are OS-agnostic and will be wired through the Windows backend.  
-- **Integration:** the upcoming Unreal/Unity/Godot plugins and SDKs will expose a consistent API surface across platforms.  
-- **Connectivity:** no always-online requirement. Online verification and telemetry are opt-in and recommended primarily for live-service titles.  
-
-Windows builds will follow once the backend stabilizes and passes performance and compatibility validation.  
-
----
-
-## Security and Privacy Commitments
-
-- **Least privilege by default.** Escalations only when necessary, with clear documentation.  
-- **Transparency over obscurity.** Clear surfaces, predictable behavior, and measurable signals.  
-- **Data minimization.** Collect only what I must to uphold integrity and safety goals.  
-- **Respect for players.** Safe, nearly invisible for legitimate players, but hostile and unforgiving to attackers.  
-- **No always-online requirement.** Online verification and telemetry are opt-in and developer-configurable; recommended for live-service titles only.  
-
----
-
-## Releases
-
-- **Target:** Linux x86_64 (glibc ≥ 2.31; kernel ≥ 5.10 recommended).  
-- Verify artifacts using the accompanying SHA-256 file before distribution.  
-
----
-
-## Getting Updates and Contact
-
-- I’ll post updates here as the HAL/tooling open-source plan progresses and as engine plugins land.  
-- For collaboration or evaluation inquiries, please contact the maintainers through this repository.
-
+For runtime licensing and commercial support, please contact the maintainers through this repository.

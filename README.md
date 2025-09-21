@@ -274,7 +274,7 @@ This SDK interface provides **demo functionality** for development and testing. 
 ## Documentation
 
 - **[Integration Guide](docs/integration-guide.md)** - Step-by-step integration walkthrough
-- **[API Reference](docs/api-reference.md)** - Complete API documentation  
+- **[API Reference](sdk/src/lib.rs)** - Complete API documentation in source code
 - **[Examples](examples/)** - Working integration examples
 - **[FAQ](#faq)** - Common questions and troubleshooting
 

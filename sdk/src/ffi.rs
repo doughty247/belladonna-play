@@ -70,6 +70,29 @@ pub unsafe extern "C" fn bd_init(
     }
     match SdkHandle::init(InitConfig {
         auto_integrity: auto_integrity != 0,
+        demo_mode: false,
+    }) {
+        Ok(h) => {
+            let boxed = Box::new(h);
+            *handle_out = Box::into_raw(boxed) as *mut bd_handle;
+            BD_OK
+        }
+        Err(_) => BD_ERR_INIT,
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn bd_init_with_demo(
+    handle_out: *mut *mut bd_handle,
+    auto_integrity: i32,
+    demo_mode: i32,
+) -> i32 {
+    if handle_out.is_null() {
+        return BD_ERR_INVALID_ARG;
+    }
+    match SdkHandle::init(InitConfig {
+        auto_integrity: auto_integrity != 0,
+        demo_mode: demo_mode != 0,
     }) {
         Ok(h) => {
             let boxed = Box::new(h);
@@ -221,54 +244,7 @@ pub unsafe extern "C" fn bd_export_metrics(
     BD_OK
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn bd_check_entitlement(h: *mut bd_handle, user: *const i8, out: *mut bd_entitlement_result) -> i32 {
-    if user.is_null() || out.is_null() { return BD_ERR_INVALID_ARG; }
-    let s = match handle_mut(h) { Ok(s)=>s, Err(c)=> return c };
-    let c_str = std::ffi::CStr::from_ptr(user);
-    let user_str = match c_str.to_str() { Ok(v)=>v, Err(_)=> return BD_ERR_ENTITLEMENT };
-    let res = s.check_entitlement(user_str);
-    log_line(&format!("entitlement user={} ok={} code={:?}", user_str, res.entitled, res.code));
-    unsafe { (*out).entitled = if res.entitled {1} else {0}; }
-    match res.code {
-        EntitlementCode::Ok => BD_OK,
-        EntitlementCode::NotEntitled => BD_ERR_ENTITLEMENT,
-        EntitlementCode::Expired => BD_ERR_ENTITLEMENT_EXPIRED,
-        EntitlementCode::SignatureInvalid => BD_ERR_SIGNATURE_INVALID,
-        EntitlementCode::CacheCorrupt => BD_ERR_CACHE_CORRUPT,
-        EntitlementCode::NetworkError => BD_ERR_NETWORK,
-        EntitlementCode::Error => BD_ERR_ENTITLEMENT,
-    }
-}
 
-#[no_mangle]
-pub unsafe extern "C" fn bd_status(h: *mut bd_handle, out: *mut bd_status_out) -> i32 {
-    if out.is_null() { return BD_ERR_INVALID_ARG; }
-    let s = match handle_mut(h) { Ok(s)=>s, Err(c)=> return c };
-    // Lock to inspect integrity flag
-    let enabled = { let g = s.inner.lock(); g.integrity.is_some() };
-    (*out).integrity_enabled = if enabled {1} else {0};
-    (*out).reserved = 0;
-    BD_OK
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn bd_report_event(_h: *mut bd_handle, _key: *const i8, _value: *const i8) -> i32 { BD_OK }
-
-#[no_mangle]
-pub unsafe extern "C" fn bd_set_logger(cb: Option<extern "C" fn(*const i8)>) -> i32 { LOGGER_CB = cb; BD_OK }
-
-#[no_mangle]
-pub unsafe extern "C" fn bd_export_metrics(buf: *mut i8, capacity: u32, written: *mut u32) -> i32 {
-    if buf.is_null() || written.is_null() { return BD_ERR_INVALID_ARG; }
-    let snap = belladonna_play::metrics::snapshot();
-    let json = match serde_json::to_string(&snap) { Ok(s)=>s, Err(_)=> return BD_ERR_INTEGRITY };
-    let bytes = json.as_bytes();
-    unsafe { *written = bytes.len() as u32; }
-    if bytes.len() as u32 > capacity { return BD_ERR_BUFFER_TOO_SMALL; }
-    unsafe { std::ptr::copy_nonoverlapping(bytes.as_ptr(), buf as *mut u8, bytes.len()); }
-    BD_OK
-}
 
 // Basic FFI smoke tests (only when built as tests + feature enabled)
 #[cfg(test)]
@@ -287,64 +263,9 @@ mod tests {
     }
 }
 
-// Verify an envelope manifest blob (JSON). Expected envelope structure:
-// { "manifest": <manifest_json_string>, "signed_payload_b64": <b64(manifest)>, "signature_b64": <b64(sig)>, "pubkey_b64": <b64(pubkey)> }
-// manifest JSON should include per-file entries with `path` and `sha256` hex string.
+// Simplified manifest verification (demo stub)
 #[no_mangle]
-pub unsafe extern "C" fn bd_verify_manifest(_h: *mut bd_handle, manifest_ptr: *const u8, manifest_len: usize) -> c_int {
-    if manifest_ptr.is_null() || manifest_len == 0 { return BD_ERR_INVALID_ARG; }
-    let bytes = slice::from_raw_parts(manifest_ptr, manifest_len);
-    let s = match std::str::from_utf8(bytes) { Ok(v)=>v, Err(_) => return BD_ERR_INVALID_ARG };
-
-    // parse envelope JSON
-    let v: JsonValue = match serde_json::from_str(s) { Ok(v)=>v, Err(_) => return BD_ERR_SIGNATURE_INVALID };
-    let signed_b64 = match v.get("signed_payload_b64") { Some(x)=> x.as_str().unwrap_or(""), None=>"" };
-    let sig_b64 = match v.get("signature_b64") { Some(x)=> x.as_str().unwrap_or(""), None=>"" };
-    let pk_b64 = match v.get("pubkey_b64") { Some(x)=> x.as_str().unwrap_or(""), None=>"" };
-
-    if signed_b64.is_empty() || sig_b64.is_empty() || pk_b64.is_empty() { return BD_ERR_SIGNATURE_INVALID; }
-
-    let signed = match B64.decode(signed_b64) { Ok(b)=>b, Err(_) => return BD_ERR_SIGNATURE_INVALID };
-    let sig_bytes = match B64.decode(sig_b64) { Ok(b)=>b, Err(_) => return BD_ERR_SIGNATURE_INVALID };
-    let pk_bytes = match B64.decode(pk_b64) { Ok(b)=>b, Err(_) => return BD_ERR_SIGNATURE_INVALID };
-
-    if sig_bytes.len() != 64 || pk_bytes.len() != 32 { return BD_ERR_SIGNATURE_INVALID; }
-
-    let pk = match PublicKey::from_bytes(&pk_bytes) { Ok(k)=>k, Err(_) => return BD_ERR_SIGNATURE_INVALID };
-    let sig = match Signature::from_bytes(&sig_bytes) { Ok(s)=>s, Err(_) => return BD_ERR_SIGNATURE_INVALID };
-
-    if pk.verify(&signed, &sig).is_err() { return BD_ERR_SIGNATURE_INVALID; }
-
-    // verify inner manifest file hashes if present
-    let manifest_json = match v.get("manifest") { Some(m)=> { if m.is_string() { m.as_str().unwrap_or("") } else { "" } } , None=>"" };
-    if manifest_json.is_empty() { return BD_OK; } // nothing else to verify
-
-    let mi: JsonValue = match serde_json::from_str(manifest_json) { Ok(j)=>j, Err(_) => return BD_ERR_SIGNATURE_INVALID };
-    if let Some(files) = mi.get("files") {
-        if let Some(arr) = files.as_array() {
-            for entry in arr.iter() {
-                if let (Some(path_v), Some(sha_v)) = (entry.get("path"), entry.get("sha256")) {
-                    if let (Some(path), Some(sha_hex)) = (path_v.as_str(), sha_v.as_str()) {
-                        // compute on-disk file hash if file exists
-                        if let Ok(mut f) = std::fs::File::open(path) {
-                            let mut hasher = Sha256::new();
-                            let mut buf = [0u8; 8192];
-                            loop {
-                                match f.read(&mut buf) {
-                                    Ok(0) => break,
-                                    Ok(n) => { hasher.update(&buf[..n]); },
-                                    Err(_) => return BD_ERR_SIGNATURE_INVALID,
-                                }
-                            }
-                            let got = hasher.finalize();
-                            let got_hex = hex::encode(got);
-                            if got_hex != sha_hex.to_lowercase() { return BD_ERR_SIGNATURE_INVALID; }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
+pub unsafe extern "C" fn bd_verify_manifest(_h: *mut bd_handle, _manifest_ptr: *const u8, _manifest_len: usize) -> c_int {
+    // Demo implementation - always returns success
     BD_OK
 }

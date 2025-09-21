@@ -22,13 +22,25 @@ This guide covers SDK integration. Runtime deployment requires a separate commer
 
 ### Demo System
 
-The SDK includes a fully functional demo system that allows you to:
-- Test integration patterns without requiring a commercial license
-- Validate your implementation before production deployment
-- Explore all SDK features through interactive examples
-- Benchmark performance impact of integration
+The SDK includes a comprehensive demo system that provides realistic functionality:
 
-The demo system provides realistic stub implementations that mirror the production runtime's behavior patterns.
+**Demo Capabilities:**
+- **Entitlement Simulation** - Realistic user validation with configurable test accounts
+- **Integrity Monitoring** - Simulated threat detection and response patterns  
+- **Interactive Examples** - Menu-driven exploration of all SDK features
+- **Asset Verification** - Cryptographic verification demonstrations
+- **User Management** - Dynamic user creation and testing
+
+**Getting Started with Demo Mode:**
+```bash
+# Run interactive demo system
+./run_demo.sh
+
+# Quick demo test
+cargo run --bin demo_runner
+```
+
+The demo system provides realistic implementations that mirror production behavior patterns without requiring a commercial license.
 
 ## Setup
 

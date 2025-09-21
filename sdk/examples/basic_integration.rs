@@ -94,7 +94,7 @@ fn simulate_game_startup(sdk: &SdkHandle) -> Result<(), Box<dyn std::error::Erro
 // Example of error handling
 #[allow(dead_code)]
 fn handle_production_scenario() {
-    match SdkHandle::init(InitConfig { auto_integrity: true }) {
+    match SdkHandle::init(InitConfig { auto_integrity: true, demo_mode: false }) {
         Ok(sdk) => {
             println!("Production mode: Full DRM protection active");
             

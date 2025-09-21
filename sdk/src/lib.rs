@@ -10,7 +10,7 @@
 //! use belladonna_sdk::{InitConfig, SdkHandle};
 //!
 //! fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     let sdk = SdkHandle::init(InitConfig { auto_integrity: true })?;
+//!     let sdk = SdkHandle::init(InitConfig { auto_integrity: true, demo_mode: true })?;
 //!     let ent = sdk.check_entitlement("player1");
 //!     println!("entitled={}", ent.entitled);
 //!     Ok(())
@@ -19,6 +19,7 @@
 
 use parking_lot::Mutex;
 use std::sync::Arc;
+use std::collections::HashMap;
 use thiserror::Error;
 
 #[cfg(feature = "license-gui")]
@@ -42,6 +43,8 @@ pub enum SdkError {
 pub struct InitConfig {
     /// Automatically enable integrity monitoring on initialization
     pub auto_integrity: bool,
+    /// Enable demo mode with simulated functionality
+    pub demo_mode: bool,
 }
 
 /// Entitlement check result codes
@@ -74,6 +77,8 @@ pub struct EntitlementResult {
 
 struct Inner {
     integrity_enabled: bool,
+    demo_mode: bool,
+    demo_entitlements: std::collections::HashMap<String, bool>,
 }
 
 /// Main SDK handle for Belladonna Play integration
@@ -88,10 +93,23 @@ impl SdkHandle {
     /// # Note
     /// This open-source SDK provides the interface only. For actual DRM and
     /// anti-cheat functionality, you need the closed-source Belladonna Play runtime.
+    /// Use `demo_mode: true` to enable interactive demo functionality.
     pub fn init(cfg: InitConfig) -> Result<Self, SdkError> {
+        let mut demo_entitlements = HashMap::new();
+        
+        // Pre-populate demo users for testing
+        if cfg.demo_mode {
+            demo_entitlements.insert("demo_player_123".to_string(), true);
+            demo_entitlements.insert("valid_user".to_string(), true);
+            demo_entitlements.insert("expired_user".to_string(), false);
+            demo_entitlements.insert("test_player".to_string(), true);
+        }
+        
         let handle = Self {
             inner: Arc::new(Mutex::new(Inner {
                 integrity_enabled: false,
+                demo_mode: cfg.demo_mode,
+                demo_entitlements,
             })),
         };
         
@@ -105,12 +123,17 @@ impl SdkHandle {
     /// Enable integrity monitoring
     ///
     /// # Note
-    /// This is a stub implementation. Actual integrity monitoring requires
-    /// the Belladonna Play runtime library.
+    /// In demo mode, provides simulated integrity monitoring.
+    /// Actual integrity monitoring requires the Belladonna Play runtime library.
     pub fn enable_integrity(&self) -> Result<(), SdkError> {
         let mut g = self.inner.lock();
         g.integrity_enabled = true;
-        println!("Integrity monitoring enabled (SDK interface mode - requires runtime)");
+        
+        if g.demo_mode {
+            println!("Demo: Integrity monitoring enabled - simulating real-time protection");
+        } else {
+            println!("Integrity monitoring enabled (SDK interface mode - requires runtime)");
+        }
         Ok(())
     }
 
@@ -124,14 +147,33 @@ impl SdkHandle {
     /// Check user entitlement
     ///
     /// # Note
-    /// This is a stub implementation. Actual entitlement checking requires
-    /// the Belladonna Play runtime library.
-    pub fn check_entitlement(&self, _user: &str) -> EntitlementResult {
-        println!("Entitlement check (SDK interface mode - requires runtime)");
-        // Stub implementation - returns error indicating runtime needed
-        EntitlementResult {
-            entitled: false,
-            code: EntitlementCode::Error,
+    /// In demo mode, provides realistic entitlement simulation.
+    /// Actual entitlement checking requires the Belladonna Play runtime library.
+    pub fn check_entitlement(&self, user: &str) -> EntitlementResult {
+        let g = self.inner.lock();
+        
+        if g.demo_mode {
+            if let Some(&entitled) = g.demo_entitlements.get(user) {
+                EntitlementResult {
+                    entitled,
+                    code: if entitled { 
+                        EntitlementCode::Ok 
+                    } else { 
+                        EntitlementCode::Expired 
+                    },
+                }
+            } else {
+                EntitlementResult {
+                    entitled: false,
+                    code: EntitlementCode::NotEntitled,
+                }
+            }
+        } else {
+            println!("Entitlement check (SDK interface mode - requires runtime)");
+            EntitlementResult {
+                entitled: false,
+                code: EntitlementCode::Error,
+            }
         }
     }
     
@@ -139,6 +181,41 @@ impl SdkHandle {
     pub fn is_integrity_enabled(&self) -> bool {
         let g = self.inner.lock();
         g.integrity_enabled
+    }
+    
+    /// Check if demo mode is active
+    pub fn is_demo_mode(&self) -> bool {
+        let g = self.inner.lock();
+        g.demo_mode
+    }
+    
+    /// Add a demo user entitlement (demo mode only)
+    pub fn add_demo_user(&self, user: &str, entitled: bool) -> Result<(), SdkError> {
+        let mut g = self.inner.lock();
+        if !g.demo_mode {
+            return Err(SdkError::Init("Demo user management requires demo_mode=true".to_string()));
+        }
+        g.demo_entitlements.insert(user.to_string(), entitled);
+        println!("Demo: Added user '{}' with entitlement={}", user, entitled);
+        Ok(())
+    }
+    
+    /// Simulate integrity threat detection (demo mode only)
+    pub fn simulate_threat(&self, threat_type: &str) -> Result<String, SdkError> {
+        let g = self.inner.lock();
+        if !g.demo_mode {
+            return Err(SdkError::Init("Threat simulation requires demo_mode=true".to_string()));
+        }
+        
+        let response = match threat_type {
+            "debugger" => "Demo: Debugger detected - switching to degraded mode",
+            "memory_scan" => "Demo: Memory scanning detected - enabling enhanced protection",
+            "injection" => "Demo: Code injection attempt blocked - maintaining normal operation",
+            _ => "Demo: Unknown threat type - no action taken",
+        };
+        
+        println!("{}", response);
+        Ok(response.to_string())
     }
 }
 
@@ -159,6 +236,7 @@ mod tests {
     fn init_and_integrity_toggle() {
         let sdk = SdkHandle::init(InitConfig {
             auto_integrity: false,
+            demo_mode: false,
         })
         .unwrap();
         
@@ -173,6 +251,7 @@ mod tests {
     fn entitlement_stub() {
         let sdk = SdkHandle::init(InitConfig {
             auto_integrity: false,
+            demo_mode: false,
         })
         .unwrap();
         

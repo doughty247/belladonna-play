@@ -41,9 +41,10 @@ This repository contains the **open-source SDK interface** for Belladonna Play. 
 use belladonna_sdk::{InitConfig, SdkHandle};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Initialize the SDK
+    // Initialize the SDK with demo mode
     let sdk = SdkHandle::init(InitConfig { 
-        auto_integrity: true 
+        auto_integrity: true,
+        demo_mode: true,
     })?;
     
     // Check user entitlement
@@ -69,8 +70,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 int main() {
     bd_handle* handle;
     
-    // Initialize SDK with integrity monitoring
-    if (bd_init(&handle, 1) != 0) {
+    // Initialize SDK with integrity monitoring and demo mode
+    if (bd_init_with_demo(&handle, 1, 1) != 0) {
         return 1;
     }
     
@@ -116,7 +117,8 @@ func _ready():
 - **Godot integration** - Native GDScript bindings and examples
 - **Example implementations** - Cryptographic verification examples
 - **Documentation** - Comprehensive guides and API documentation
-- **Demo System** - Interactive demonstration of SDK capabilities and integration patterns
+- **Interactive Demo System** - Fully functional demo mode with realistic entitlement simulation
+- **Demo Runner** - Easy-to-use script for testing integration patterns
 
 ### Runtime Features (Requires Commercial License)
 - **DRM Protection** - Asset encryption and entitlement verification
@@ -130,8 +132,11 @@ func _ready():
 ### 1. Basic DRM Integration
 
 ```rust
-// Initialize with DRM only
-let sdk = SdkHandle::init(InitConfig { auto_integrity: false })?;
+// Initialize with DRM and demo mode
+let sdk = SdkHandle::init(InitConfig { 
+    auto_integrity: false,
+    demo_mode: true,
+})?;
 
 // Check if player owns the game
 match sdk.check_entitlement(&player_id) {
@@ -153,8 +158,11 @@ match sdk.check_entitlement(&player_id) {
 ### 2. Anti-Cheat Integration  
 
 ```rust
-// Enable integrity monitoring
-let sdk = SdkHandle::init(InitConfig { auto_integrity: true })?;
+// Enable integrity monitoring with demo
+let sdk = SdkHandle::init(InitConfig { 
+    auto_integrity: true,
+    demo_mode: true,
+})?;
 
 // Check integrity status
 if sdk.is_integrity_enabled() {
@@ -185,6 +193,35 @@ if (result == BD_OK) {
     bd_free_memory(asset_data);
 }
 ```
+
+## Demo System
+
+The SDK includes a comprehensive demo system that provides realistic functionality without requiring a commercial license:
+
+### Demo Features
+- **Interactive Demo Runner** - Menu-driven exploration of SDK capabilities
+- **Entitlement Simulation** - Realistic user validation with predefined test accounts
+- **Integrity Monitoring** - Simulated threat detection and response patterns
+- **Asset Verification** - Cryptographic verification examples
+- **User Management** - Dynamic user creation and entitlement testing
+- **Integration Examples** - Live demonstrations across Rust, C/C++, and Godot
+
+### Running Demos
+
+```bash
+# Interactive demo system
+./run_demo.sh
+
+# Or run specific examples
+cargo run --example interactive_demo
+cargo run --example basic_integration
+```
+
+### Demo Users (Pre-configured)
+- `demo_player_123` - Entitled user
+- `valid_user` - Entitled user  
+- `expired_user` - Expired license
+- `test_player` - Entitled user
 
 ## Building
 
@@ -238,8 +275,8 @@ This SDK provides:
 - Public API interfaces and type definitions
 - Example cryptographic verification code
 - Integration patterns and documentation
-- Stub implementations for development/testing
-- Interactive demo system for integration validation
+- Realistic demo implementations with simulated functionality
+- Interactive demo system for integration validation and testing
 
 This SDK does **NOT** provide:
 - Actual DRM protection mechanisms

@@ -21,6 +21,10 @@ once_cell = "1.19"
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1.0", features = ["v4"] }
 
+[[bin]]
+name = "demo_runner"
+path = "src/bin/demo_runner.rs"
+
 # Note: This is the open-source SDK interface only.
 # Runtime DRM and anti-cheat functionality requires the closed-source
 # belladonna-play runtime library, available separately under commercial license.

@@ -344,7 +344,7 @@ A: Belladonna Play currently supports **Linux** (x86_64). The SDK interface comp
 A: Windows support is **highly prioritized** and planned for the next major release. Our Hardware Abstraction Layer (HAL) architecture is specifically designed to enable rapid cross-platform deployment, making Windows implementation straightforward once development resources are allocated.
 
 **Q: Will macOS be supported?**
-A: macOS support is planned for future releases following Windows implementation. The HAL architecture will facilitate this deployment as well.
+A: macOS support is possible in the future as our HAL architecture is designed for cross-platform deployment. However, due to lack of development hardware, macOS support is not possible at this time. Windows support takes priority given available development resources.
 
 **Q: Can I develop on Windows and deploy on Linux?**
 A: Yes! The SDK interface can be used for development and testing on any platform where Rust runs. You can develop your integration on Windows using demo mode, then deploy to Linux for production with the runtime library.
